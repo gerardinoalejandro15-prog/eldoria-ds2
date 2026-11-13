@@ -1,4 +1,5 @@
 #include <nds.h>
+// Compilacion sincronizada con la version actual del proyecto.
 #include <stdio.h>
 
 static volatile int frame = 0;
