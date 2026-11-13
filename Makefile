@@ -13,4 +13,4 @@ ASFLAGS := $(ARCH)
 LDFLAGS := -specs=ds_arm9.specs
 LIBS := -lnds9
 
-include $(DEVKITPRO)/libnds/Makefile
+include $(DEVKITARM)/ds_rules
