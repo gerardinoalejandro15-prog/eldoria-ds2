@@ -10,15 +10,11 @@ include $(DEVKITARM)/ds_rules
 
 TARGET   := eldoria
 BUILD    := build
-SOURCES  := source
-INCLUDES := include
-DATA     := data
-GRAPHICS :=
-AUDIO    :=
-ICON     :=
-NITRO    :=
+SOURCES  := source data
+INCLUDES := include build
 
-ARCH := -march=armv5te -mtune=arm946e-s
+# Nintendo DS ARM9: use the Thumb ABI expected by the current devkitPro examples.
+ARCH := -march=armv5te -mtune=arm946e-s -mthumb
 
 CFLAGS   := -g -Wall -O2 -ffunction-sections -fdata-sections \
             $(ARCH) $(INCLUDE) -DARM9
@@ -32,16 +28,13 @@ LIBDIRS := $(LIBNDS) $(PORTLIBS)
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 
 export OUTPUT := $(CURDIR)/$(TARGET)
-export VPATH := $(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-                $(foreach dir,$(DATA),$(CURDIR)/$(dir)) \
-                $(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir))
+export VPATH := $(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
 export DEPSDIR := $(CURDIR)/$(BUILD)
 
 CFILES   := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES   := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-PNGFILES := $(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
-BINFILES := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+BINFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.bin)))
 
 ifeq ($(strip $(CPPFILES)),)
 export LD := $(CC)
@@ -49,12 +42,8 @@ else
 export LD := $(CXX)
 endif
 
-export OFILES_BIN := $(addsuffix .o,$(BINFILES))
-export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
-export OFILES := $(PNGFILES:.png=.o) $(OFILES_BIN) $(OFILES_SOURCES)
-export HFILES := $(PNGFILES:.png=.h) $(addsuffix .h,$(subst .,_,$(BINFILES)))
-
-export INCLUDE := $(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) \
+export OFILES := $(BINFILES:.bin=.o) $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+export INCLUDE := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
                   $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
                   -I$(CURDIR)/$(BUILD)
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
@@ -72,10 +61,15 @@ clean:
 
 else
 
+DEPENDS := $(OFILES:.o=.d)
+
 $(OUTPUT).nds: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
-$(OFILES_SOURCES): $(HFILES)
 
--include $(DEPSDIR)/*.d
+%.o: %.bin
+	@echo $(notdir $<)
+	$(bin2o)
+
+-include $(DEPENDS)
 
 endif
