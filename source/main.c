@@ -1,20 +1,31 @@
 #include <nds.h>
+#include <stdio.h>
+
+static volatile int frame = 0;
+
+static void Vblank(void) {
+    frame++;
+}
 
 int main(void) {
-    // Enrutar el motor grafico principal a la pantalla superior.
-    lcdMainOnTop();
+    irqSet(IRQ_VBLANK, Vblank);
+    consoleDemoInit();
 
-    // Activar el modo framebuffer y asignar la memoria de video A.
-    videoSetMode(MODE_FB0);
-    vramSetBankA(VRAM_A_LCD);
+    iprintf("       E L D O R I A\n");
+    iprintf("  RPG - MUNDO DE FANTASIA\n\n");
+    iprintf("  Si puedes leer esto,\n");
+    iprintf("  el juego ha arrancado.\n\n");
+    iprintf("  Pulsa START para salir.\n");
 
-    // Pintar todos los pixeles de la pantalla principal de azul.
-    for (int i = 0; i < 256 * 192; i++) {
-        VRAM_A[i] = RGB15(0, 0, 31);
-    }
-
-    while (1) {
+    while (pmMainLoop()) {
         swiWaitForVBlank();
+        scanKeys();
+
+        if (keysDown() & KEY_START) {
+            iprintf("\n  Inicio detectado.");
+        }
+
+        iprintf("\x1b[20;0HFrames: %d   ", frame);
     }
 
     return 0;
