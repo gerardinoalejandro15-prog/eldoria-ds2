@@ -1,29 +1,32 @@
 #include <nds.h>
 #include <stdio.h>
 
+static volatile int frame = 0;
+
+static void Vblank(void) {
+    frame++;
+}
+
 int main(void) {
-    // Inicializar explícitamente la pantalla superior como pantalla principal.
-    videoSetMode(MODE_0_2D);
-    vramSetBankA(VRAM_A_MAIN_BG);
+    irqSet(IRQ_VBLANK, Vblank);
 
-    // Crear la consola de texto en la pantalla superior.
-    consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
+    // Inicializacion de pantalla siguiendo el ejemplo oficial de devkitPro.
+    consoleDemoInit();
 
-    consoleClear();
-    iprintf("\x1b[3;8HELDORIA");
-    iprintf("\x1b[5;3HRPG - MUNDO DE FANTASIA");
-    iprintf("\x1b[9;2HUn nuevo mundo te espera...");
-    iprintf("\x1b[14;3HPulsa START para comenzar");
+    iprintf("        ELDORIA\n");
+    iprintf("   RPG - MUNDO DE FANTASIA\n\n");
+    iprintf(" Un nuevo mundo te espera...\n\n");
+    iprintf(" Pulsa START para comenzar\n");
 
     while (pmMainLoop()) {
+        swiWaitForVBlank();
         scanKeys();
-        int keys = keysDown();
 
-        if (keys & KEY_START) {
-            iprintf("\x1b[18;5HLa aventura comienza!");
+        if (keysDown() & KEY_START) {
+            iprintf("\n\n La aventura comienza!\n");
         }
 
-        swiWaitForVBlank();
+        iprintf("\x1b[20;0HPrueba de pantalla: %d   ", frame);
     }
 
     return 0;
