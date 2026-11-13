@@ -1,0 +1,28 @@
+name: Build Eldoria DS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Compilar Eldoria
+        run: |
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITARM=$DEVKITPRO/devkitARM
+          make
+
+      - name: Guardar ROM
+        uses: actions/upload-artifact@v4
+        with:
+          name: Eldoria-DS
+          path: eldoria.nds
