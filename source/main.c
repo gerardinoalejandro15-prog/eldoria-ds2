@@ -1,16 +1,18 @@
 #include <nds.h>
 
 int main(void) {
-    // Prueba minima: usar la VRAM como framebuffer, sin consola ni texto.
+    // Enrutar el motor grafico principal a la pantalla superior.
+    lcdMainOnTop();
+
+    // Activar el modo framebuffer y asignar la memoria de video A.
     videoSetMode(MODE_FB0);
     vramSetBankA(VRAM_A_LCD);
 
-    u16 *framebuffer = (u16 *)VRAM_A;
+    // Pintar todos los pixeles de la pantalla principal de azul.
     for (int i = 0; i < 256 * 192; i++) {
-        framebuffer[i] = RGB15(0, 0, 31) | BIT(15);
+        VRAM_A[i] = RGB15(0, 0, 31);
     }
 
-    // Mantener la imagen visible sin depender de la consola ni de IRQ propias.
     while (1) {
         swiWaitForVBlank();
     }
