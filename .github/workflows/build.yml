@@ -15,11 +15,11 @@ jobs:
       - name: Descargar proyecto
         uses: actions/checkout@v4
 
+      - name: Instalar libnds
+        run: dkp-pacman -S --needed --noconfirm libnds
+
       - name: Compilar Eldoria
-        run: |
-          export DEVKITPRO=/opt/devkitpro
-          export DEVKITARM=$DEVKITPRO/devkitARM
-          make
+        run: make
 
       - name: Guardar ROM
         uses: actions/upload-artifact@v4
