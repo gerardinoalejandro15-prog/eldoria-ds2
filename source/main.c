@@ -10,7 +10,8 @@ int main(void) {
     iprintf("\x1b[9;2HUn nuevo mundo te espera...");
     iprintf("\x1b[14;3HPulsa START para comenzar");
 
-    while (1) {
+    // libnds 2.x necesita que el bucle principal atienda el sistema de energía.
+    while (pmMainLoop()) {
         scanKeys();
         int keys = keysDown();
 
